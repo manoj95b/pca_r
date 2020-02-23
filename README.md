@@ -1,3 +1,5 @@
+## This code focuses on principal component analysis on the data of Public utilities companies in the USA.
+
 Overview of 22 Public Utility Companies in the USA
 ================
 Manoj Bhandari
