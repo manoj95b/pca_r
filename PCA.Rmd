@@ -1,6 +1,7 @@
 ---
 title: 'Overview of 22 Public Utility Companies in the USA'
 author: "Manoj Bhandari"
+output: rmarkdown::github_document
 ---
 
 ### **Install and Load Data Table Package**
