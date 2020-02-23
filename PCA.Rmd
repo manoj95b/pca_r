@@ -1,0 +1,224 @@
+---
+title: 'Overview of 22 Public Utility Companies in the USA'
+author: "Manoj Bhandari"
+---
+
+### **Install and Load Data Table Package**
+
+```{r, warning=FALSE,error=FALSE}
+if(!require("data.table")) install.packages("data.table")
+```
+
+### **Read the Utilities file and store it in a data table**
+
+- Read the file using read.csv()
+- Store the file contents as data.table
+- Display the data.table
+- This variable is used throughout all the questions whenever utilities data is required
+
+```{r, warning=FALSE,error=FALSE}
+utilities <- read.csv(file = "Utilities.csv")
+util.dt <- setDT(utilities)
+util.dt
+```
+
+
+**Get the numeric values from Uitilities file and display the values**
+
+```{r, warning=FALSE,error=FALSE}
+util.num.values <- util.dt[,!"Company"]
+util.num.values
+```
+
+**Minimum values of Numeric variables**
+
+Calculate the minimum value of all the numeric type columns by using lapply() fucntion.
+Display the data
+```{r, warning=FALSE,error=FALSE}
+util.min <- util.dt[,lapply(util.num.values,min)]
+util.min
+```
+
+**Maximum values of Numeric variables**
+
+Calculate the maximum value of all the numeric type columns by using lapply() fucntion.
+Display the data
+```{r, warning=FALSE,error=FALSE}
+util.max <- util.dt[,lapply(util.num.values,max)]
+util.max
+```
+
+**Mean values of Numeric variables**
+
+Calculate the mean value of all the numeric type columns by using lapply() fucntion.
+Display the data
+```{r, warning=FALSE,error=FALSE}
+util.mean <- util.dt[,lapply(util.num.values,mean)]
+util.mean
+```
+
+**Median values of Numeric variables**
+
+Calculate the median value of all the numeric type columns by using lapply() fucntion.
+Display the data
+```{r, warning=FALSE,error=FALSE}
+util.median <- util.dt[,lapply(util.num.values,median)]
+util.median
+```
+
+**Standard Deviation values of Numeric variables**
+
+Calculate the Standard deviation value of all the numeric type columns by using lapply() fucntion.
+Display the data
+```{r, warning=FALSE,error=FALSE}
+util.sd <- util.dt[,lapply(util.num.values,sd)]
+util.sd
+```
+
+
+**Display all the metrics** 
+
+Display the matrix where each column represents one metric for all the numeric variables
+```{r, warning=FALSE,error=FALSE}
+metrics <- c(util.min,util.max,util.mean,util.median,util.sd)
+variables <- c("Fixed_Charge","RoR","Cost","Load_Factor","Demand_Growth","Sales", "Nuclear", "Fuel_Cost")
+headers <- c("Minimum","Maximum","Mean","Median","SD")
+result <- matrix(metrics,nrow=8,dimnames = list(variables,headers))
+result
+```
+From the results of standard deviation of each numeric variables, we can observe that the standard deviation value of **Sales** is significantly large.
+The possible reasons for this deviation are:
+
+* Each utility company may not have same number of customers
+* The usage behaviour of customers of each company varies
+* Assuming that each company respresent a state in US, the usage pattern varies significantly based on the population in the state and the weather conditions in the state. For example, companies like Nevada, Florida and Texas have significantly high usage as it has large population as well as hot weather which increases the consumption
+
+After Sales, the next variable with high variance is **Cost**.
+The possible reasons for this deviation are:
+
+* Type of fuel used
+* Taxes in the particular region
+* Demand in a particular region
+
+
+# ** Create boxplots for each of the numeric variables. Are there any extreme values for any of the variables? Which ones? **
+
+**Load ggplot2 library**
+
+Install the gglpot2 package if not already installed
+```{r, warning=FALSE,error=FALSE}
+if(!require("ggplot2")) install.packages("ggplot2")
+```
+
+**Boxplot for Fixed_charge**
+```{r, warning=FALSE,error=FALSE}
+ggplot(util.dt, aes( y = Fixed_charge)) + 
+  geom_boxplot(fill = "skyblue") + ggtitle("Distribution of Fixed Charge Covering Ratio")
+```
+
+**Boxplot for RoR**
+```{r, warning=FALSE,error=FALSE}
+ggplot(util.dt, aes( y = RoR)) + 
+  geom_boxplot(fill = "yellow") + ggtitle("Distribution of Rate of Return on Capital")
+```
+
+**Boxplot for Cost**
+```{r, warning=FALSE,error=FALSE}
+ggplot(util.dt, aes( y = Cost)) + 
+  geom_boxplot(fill = "red") + ggtitle("Distribution of Cost per capacity in place")
+```
+
+**Boxplot for Load_Factor**
+```{r, warning=FALSE,error=FALSE}
+ggplot(util.dt, aes( y = Load_factor)) + 
+  geom_boxplot(fill = "orange") + ggtitle("Distribution of annual load factor")
+```
+
+**Boxplot for Demand_Growth**
+```{r, warning=FALSE,error=FALSE}
+ggplot(util.dt, aes( y = Demand_growth)) + 
+  geom_boxplot(fill = "grey") + ggtitle("Distribution of Peak kwh demand growth from 1974 to 1975")
+```
+
+**Boxplot for Sales**
+```{r, warning=FALSE,error=FALSE}
+ggplot(util.dt, aes( y = Sales)) + 
+  geom_boxplot(fill = "gold") + ggtitle("Distribution of Sales of kwh usage per year")
+```
+
+**Boxplot for Nuclear**
+```{r, warning=FALSE,error=FALSE}
+ggplot(util.dt, aes( y = Nuclear)) + 
+  geom_boxplot(fill = "skyblue") + ggtitle("Distribution of percent of nuclear")
+```
+
+**Boxplot for Fuel_Cost**
+```{r, warning=FALSE,error=FALSE}
+ggplot(util.dt, aes( y = Fuel_Cost)) + 
+  geom_boxplot(fill = "skyblue") + ggtitle("Distribution of Total fuest costs(cents per kwh")
+```
+
+We can see that the vaiables **Fixed_charge** and **Sales** have extreme values.
+
+**Fixed charge** : The fixed charge covering ratio (income/debt) varies because of varied demand from customers of each utility company
+
+**Sales** : Even sales varies a lot because of varied usage levels by customers of each company.
+
+
+# **Question 3: Create a heatmap for the numeric variables. Discuss any interesting trend you see in this chart.**
+
+**Load the package reshape**
+```{r, warning=FALSE,error=FALSE}
+library(reshape)
+```
+
+**Create a co-relation matrix to prepare data for Heatmap**
+```{r warning=FALSE,error = FALSE}
+rounded_values <- round(cor(util.num.values),2)
+co.matrix <- melt(rounded_values)
+```
+
+**Plot the HeatMap using ggplot**
+```{r warning=FALSE,error = FALSE}
+ggplot(co.matrix, aes(x = X1, y = X2, fill = value)) + 
+  scale_fill_gradient(low="orange", high="red") +
+  geom_tile() + 
+  geom_text(aes(x = X1, y = X2, label = value)) +
+  ggtitle("HeatMap of Numerical Variables")
+```
+
+We can observe the co relation between the following variables:
+
+* ***Fixed_charge and RoR***: As the fixed charge covering ratio increases, we can see a corresponding increse in rate of return on capital because higher the fixed charge, higher the income and higher rate of return
+
+* ***Load_factor and Fuel_Cost***: As the annual load factor increases, the company needs to produce more, leading to increased usage of fuel. This increases the demand for the fuel and hence the total fuel cost also increases
+
+* ***Cost and Demand_growth***: As the demand increases, the company needs to balance the supply and hence the cost increases to balance the demand and supply.
+
+
+# **Question 4: Run principal component analysis using unscaled numeric variables in the dataset. How do you interpret the results from this model?**
+
+```{r, warning=FALSE,error=FALSE}
+pca <- prcomp(util.num.values)
+summary(pca)
+pca$rotation
+```
+
+Observations from the model:
+
+* Sales captures most of the variance in the data
+* Sales dominates other numeric variables and accounts for 99.98% of the variation
+* This model does not seem to be efficiently reducing the dimensions on the variables
+
+# ** Run principal component model after scaling the numeric variables. Did the results/interpretations change? **
+```{r, warning=FALSE,error=FALSE}
+pca.scaled <- prcomp(util.num.values, scale. = TRUE)
+summary(pca.scaled)
+pca.scaled$rotation
+```
+
+Observations from the model:
+
+* After scaling the data variables, Sales variable no longer dominates and we realize that sales does not actually account for most of the variance in data
+* We need to consider 6 principal components which captures/accounts fpr 95.2% of variance in the data
+* In the decreasing order, the linear summation of following variables accounts for 95.2% of variance in the data: *RoR, Fixed_charge, Demand_growth, Cost, Fuel_cost and Load_factor* and these variables are to be considered 
